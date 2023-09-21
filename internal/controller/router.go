@@ -2,13 +2,14 @@ package controller
 
 import "github.com/gin-gonic/gin"
 
-func setupAuthRoutes(router gin.IRoutes) {
-	router.POST("/auth/signup")
-	router.POST("/auth/login")
-	// TODO add email verification
+func SetupAuthRoutes(router gin.IRoutes, authCtrl *Auth) {
+	router.POST("/auth/signup", authCtrl.Signup)
+	router.POST("/auth/login", authCtrl.Login)
 }
 
-func setupUploadRoutes(router gin.IRoutes) {
+func SetupUploadRoutes(router gin.IRoutes, middleware gin.HandlerFunc) {
+	router.Use(middleware)
+
 	router.POST("/file/upload")
 	router.GET("/file/download/:id")
 	router.GET("/file/download/list")
