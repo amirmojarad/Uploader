@@ -1,0 +1,235 @@
+linters:
+  # Enable specific linter
+  # https://golangci-lint.run/usage/linters/#enabled-by-default-linters
+  enable:
+    - asciicheck
+    - containedctx
+    - cyclop
+    - decorder
+    - dogsled
+    - durationcheck
+    - errorlint
+    - exhaustive
+    - exportloopref
+    - forcetypeassert
+    - funlen
+    - gci
+    - gochecknoinits
+    - gocognit
+    - goconst
+    - godot
+    - godox
+    - ifshort
+    - importas
+    - lll
+    - makezero
+    - misspell
+    - nakedret
+    - nestif
+    - nilnil
+    - unconvert
+    - varnamelen
+    - whitespace
+
+  disable:
+    - dupword
+    - dupl # disable for now
+    - exhaustivestruct
+    - forbidigo
+    - gochecknoglobals
+    - goerr113
+    - gofumpt
+    - scopelint
+    - depguard
+#    - tagalign
+
+  # Enable presets.
+  # https://golangci-lint.run/usage/linters
+  presets:
+    - bugs
+    - comment
+    - complexity
+    - error
+    - format
+    - import
+    - metalinter
+    - module
+    - performance
+    - sql
+    - style
+    - test
+    - unused
+  # Run only fast linters from enabled linters set (first run won't be fast)
+  # Default: false
+  fast: true
+
+
+linters-settings:
+  cyclop:
+    # The maximal code complexity to report.
+    max-complexity: 10
+    # The maximal average package complexity.
+    # If it's higher than 0.0 (float) the check is enabled
+    # Default: 0.0
+    package-average: 7.0
+    # Should ignore tests.
+    # Default: false
+    skip-tests: true
+
+  decorder:
+    # Required order of `type`, `const`, `var` and `func` declarations inside a file.
+    # Default: types before constants before variables before functions.
+    dec-order:
+      - const
+      - var
+      - type
+      - func
+
+    # If true, order of declarations is not checked at all.
+    # Default: true (disabled)
+    disable-dec-order-check: false
+    # If true, `init` func can be anywhere in file (does not have to be declared before all other functions).
+    # Default: true (disabled)
+    disable-init-func-first-check: false
+    # If true, multiple global `type`, `const` and `var` declarations are allowed.
+    # Default: true (disabled)
+    disable-dec-num-check: true
+
+  dupl:
+    # Tokens count to trigger issue.
+    # Default: 150
+    threshold: 100
+
+  errorlint:
+    # Check for plain type assertions and type switches.
+    # Default: true
+    asserts: false
+
+  gci:
+    # Checks that no inline Comments are present.
+    # Default: false
+    no-inline-comments: true
+    # Checks that no prefix Comments(comment lines above an import) are present.
+    # Default: false
+    no-prefix-comments: true
+
+  gocognit:
+    # Minimal code complexity to report
+    # Default: 30 (but we recommend 10-20)
+    min-complexity: 10
+
+  godot:
+    # Comments to be checked: `declarations`, `toplevel`, or `all`.
+    # Default: declarations
+    scope: all
+
+  godox:
+    # Report any comments starting with keywords, this is useful for TODO or FIXME comments that
+    # might be left in the code accidentally and should be resolved before merging.
+    # Default: TODO, BUG, and FIXME.
+    keywords:
+      - TODO
+      - FIXME
+      - NOTE
+      - OPTIMIZE # marks code that should be optimized before merging
+      - HACK # marks hack-around that should be removed before merging
+
+  importas:
+    # Do not allow non-required aliases.
+    # Default: false
+    no-extra-aliases: false
+
+  lll:
+    # Max line length, lines longer will be reported.
+    # '\t' is counted as 1 character by default, and can be changed with the tab-width option.
+    # Default: 120.
+    line-length: 160
+    # Tab width in spaces.
+    # Default: 1
+    tab-width: 1
+
+  makezero:
+    # Allow only slices initialized with a length of zero.
+    # Default: false
+    always: true
+
+  tagliatelle:
+    # Check the struck tag name case.
+    case:
+      rules:
+        # Any struct tag type can be used.
+        # Support string case: `camel`, `pascal`, `kebab`, `snake`, `goCamel`, `goPascal`, `goKebab`, `goSnake`, `upper`, `lower`
+        json: snake
+
+  varnamelen:
+    # The longest distance, in source lines, that is being considered a "small scope".
+    # Variables used in at most this many lines will be ignored.
+    # Default: 5
+    max-distance: 6
+    # The minimum length of a variable's name that is considered "long".
+    # Variable names that are at least this long will be ignored.
+    # Default: 3
+    min-name-length: 2
+    # Optional list of variable names that should be ignored completely.
+    # Default: []
+    ignore-names:
+      - err
+      - id
+      - tx
+      - db
+      - g
+    # Optional list of variable declarations that should be ignored completely.
+    # Entries must be in one of the following forms (see below for examples):
+    # - for variables, parameters, named return values, method receivers, or type parameters:
+    #   <name> <type>  (<type> can also be a pointer/slice/map/chan/...)
+    # - for constants: const <name>
+    #
+    # Default: []
+    ignore-decls:
+      - c echo.Context
+      - c context.Context
+      - c *gin.Context
+      - t testing.T
+      - f *foo.Bar
+      - e error
+      - i int
+      - const C
+      - T any
+      - m map[string]int
+
+  whitespace:
+    # Enforces newlines (or comments) after every multi-line if statement.
+    # Default: false
+    multi-if: true
+    # Enforces newlines (or comments) after every multi-line function signature.
+    # Default: false
+    multi-func: false
+
+issues:
+  exclude-rules:
+    - path: 'models\.go'
+      linters:
+        - decorder
+    - path: '(.+)_test\.go'
+      linters:
+        - execinquery
+        - funlen
+        - lll
+        - gocognit
+        - wsl
+        - nlreturn
+    - path: 'main_test\.go'
+      linters:
+        - testpackage
+    - path: 'user_models.go'
+      linters:
+        - tagliatelle
+    - path: 'snappfood_models.go'
+      linters:
+        - tagliatelle
+    - path: 'asanpardakht_models.go'
+      linters:
+        - tagliatelle
+    - path: 'asanpardakht.go'
+      linters:
+        - tagliatelle
