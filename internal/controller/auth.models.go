@@ -24,3 +24,11 @@ type SignupResponse struct {
 	Id     uint `json:"id"`
 	Tokens `json:"tokens"`
 }
+
+type UpdateRefreshTokenRequest struct {
+	UserId       uint
+	RefreshToken string
+}
+
+type UpdateRefreshTokenResponse struct {
+}

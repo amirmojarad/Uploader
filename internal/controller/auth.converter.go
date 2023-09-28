@@ -37,3 +37,17 @@ func toViewLoginResponse(res service.LoginResponse) LoginResponse {
 		},
 	}
 }
+
+func toSvcUpdateRefreshTokenRequest(userId uint, refreshToken string) service.UpdateRefreshTokenRequest {
+	return service.UpdateRefreshTokenRequest{
+		UserId:       userId,
+		RefreshToken: refreshToken,
+	}
+}
+
+func toSvcTokens(tokens Tokens) service.Tokens {
+	return service.Tokens{
+		AccessToken:  tokens.AccessToken,
+		RefreshToken: tokens.RefreshToken,
+	}
+}

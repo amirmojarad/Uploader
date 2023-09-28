@@ -8,7 +8,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func jwtMiddleware(c *gin.Context, jwtService jwt_handler.Jwt) {
+type Middleware struct {
+	jwt *jwt_handler.Jwt
+}
+
+func NewMiddleware(jwt *jwt_handler.Jwt) *Middleware {
+	return &Middleware{
+		jwt: jwt,
+	}
+}
+
+func (m Middleware) jwtMiddleware(c *gin.Context) {
 	tokenString := c.GetHeader("Authorization")
 	if tokenString == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header required"})
@@ -18,7 +28,7 @@ func jwtMiddleware(c *gin.Context, jwtService jwt_handler.Jwt) {
 	}
 
 	token, err := jwt.ParseWithClaims(tokenString, &jwt_handler.Claims{}, func(token *jwt.Token) (interface{}, error) {
-		return jwtService.SecretKey, nil
+		return m.jwt.SecretKey, nil
 	})
 
 	if err != nil {

@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"Uploader/conf"
-	"Uploader/internal/jwt-handler"
 	"github.com/sirupsen/logrus"
 )
 
@@ -19,15 +18,13 @@ type Auth struct {
 	cfg            *conf.AppConfig
 	logger         *logrus.Entry
 	authRepository AuthRepository
-	jwtService     jwt_handler.Jwt
 }
 
-func NewAuth(cfg *conf.AppConfig, logger *logrus.Entry, authRepository AuthRepository, jwtService jwt_handler.Jwt) *Auth {
+func NewAuth(cfg *conf.AppConfig, logger *logrus.Entry, authRepository AuthRepository) *Auth {
 	return &Auth{
 		cfg:            cfg,
 		logger:         logger,
 		authRepository: authRepository,
-		jwtService:     jwtService,
 	}
 }
 
@@ -45,27 +42,8 @@ func (a Auth) Login(ctx context.Context, req LoginRequest) (LoginResponse, error
 		return LoginResponse{}, err
 	}
 
-	refreshToken, err := a.jwtService.GenerateJWT(userEntity.Id)
-	if err != nil {
-		return LoginResponse{}, err
-	}
-
-	if err := a.authRepository.UpdateRefreshToken(ctx,
-		toUpdateRefreshTokenRequest(userEntity.Id, refreshToken)); err != nil {
-		return LoginResponse{}, err
-	}
-
-	accessToken, err := a.jwtService.GenerateJWT(userEntity.Id)
-	if err != nil {
-		return LoginResponse{}, err
-	}
-
 	return LoginResponse{
 		Id: userEntity.Id,
-		Tokens: Tokens{
-			AccessToken:  accessToken,
-			RefreshToken: refreshToken,
-		},
 	}, nil
 }
 
@@ -88,27 +66,9 @@ func (a Auth) Signup(ctx context.Context, req SignupRequest) (SignupResponse, er
 		return SignupResponse{}, err
 	}
 
-	refreshToken, err := a.jwtService.GenerateJWT(response.Id)
-
-	if err != nil {
-		return SignupResponse{}, err
-	}
-
-	if err = a.authRepository.UpdateRefreshToken(ctx, UpdateRefreshTokenRequest{
-		UserId:       response.Id,
-		RefreshToken: refreshToken,
-	}); err != nil {
-		return SignupResponse{}, err
-	}
-
-	accessToken, err := a.jwtService.GenerateJWT(response.Id)
-
-	if err != nil {
-		return SignupResponse{}, err
-	}
-
-	response.Tokens.RefreshToken = refreshToken
-	response.Tokens.AccessToken = accessToken
-
 	return response, nil
+}
+
+func (a Auth) SetRefreshToken(ctx context.Context, req UpdateRefreshTokenRequest) error {
+	return a.authRepository.UpdateRefreshToken(ctx, req)
 }
