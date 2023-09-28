@@ -23,6 +23,14 @@ type Uploader struct {
 	logger *logrus.Entry
 }
 
+func NewUploader(cfg *conf.AppConfig, logger *logrus.Entry, svc UploaderService) *Uploader {
+	return &Uploader{
+		svc:    svc,
+		cfg:    cfg,
+		logger: logger,
+	}
+}
+
 func (u Uploader) UploadFile(ctx *gin.Context) {
 	var req UploadFileRequest
 

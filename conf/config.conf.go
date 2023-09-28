@@ -26,6 +26,14 @@ type AppConfig struct {
 		Secret         string
 		ExpireDuration int
 	}
+
+	Minio struct {
+		AccessKeyID     string
+		BucketName      string
+		SecretAccessKey string
+		Url             string
+		Ssl             bool
+	}
 }
 
 type Database struct {
@@ -55,6 +63,8 @@ func NewAppConfig() (*AppConfig, error) {
 	if err := setJwtConfigs(&cfg); err != nil {
 		return nil, err
 	}
+
+	setMinioConfigs(&cfg)
 
 	return &cfg, nil
 }
@@ -126,6 +136,13 @@ func setPostgresDbConfig(cfg *AppConfig) error {
 	cfg.PostgresDatabase.MigrationPath = os.Getenv("POSTGRES_DATABASE_MIGRATION_PATH")
 
 	return nil
+}
+
+func setMinioConfigs(cfg *AppConfig) {
+	cfg.Minio.AccessKeyID = os.Getenv("GATEWAY_MINIO_ACCESS_KEY_ID")
+	cfg.Minio.Url = os.Getenv("GATEWAY_MINIO_URL")
+	cfg.Minio.SecretAccessKey = os.Getenv("GATEWAY_MINIO_SECRET_ACCESS_KEY")
+	cfg.Minio.BucketName = os.Getenv("GATEWAY_MINIO_BUCKET_NAME")
 }
 
 func envConvertor[T any](envKey string, converter func(v string) (T, error)) (T, error) {
