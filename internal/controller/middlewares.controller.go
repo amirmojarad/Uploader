@@ -1,7 +1,9 @@
 package controller
 
 import (
+	"Uploader/consts"
 	"net/http"
+	"strings"
 
 	"Uploader/internal/jwt-handler"
 	"github.com/dgrijalva/jwt-go"
@@ -27,7 +29,9 @@ func (m Middleware) jwtMiddleware(c *gin.Context) {
 		return
 	}
 
-	token, err := jwt.ParseWithClaims(tokenString, &jwt_handler.Claims{}, func(token *jwt.Token) (interface{}, error) {
+	splitToken := strings.Split(tokenString, " ")
+
+	token, err := jwt.ParseWithClaims(splitToken[1], &jwt_handler.Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return m.jwt.SecretKey, nil
 	})
 
@@ -46,5 +50,5 @@ func (m Middleware) jwtMiddleware(c *gin.Context) {
 		return
 	}
 
-	c.Set("userID", claims.UserID)
+	c.Set(consts.REQUEST_USER_ID, claims.UserID)
 }

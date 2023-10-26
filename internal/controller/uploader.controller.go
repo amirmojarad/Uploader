@@ -2,6 +2,7 @@ package controller
 
 import (
 	"Uploader/conf"
+	"Uploader/consts"
 	"Uploader/internal/service"
 	"context"
 	"github.com/gin-gonic/gin"
@@ -15,6 +16,7 @@ const (
 
 type UploaderService interface {
 	UploadFile(ctx context.Context, request service.UploadFileRequest) (service.UploadFileResponse, error)
+	ListFiles(ctx context.Context, request service.ListFilesRequest) (service.ListFilesResponse, error)
 }
 
 type Uploader struct {
@@ -29,6 +31,30 @@ func NewUploader(cfg *conf.AppConfig, logger *logrus.Entry, svc UploaderService)
 		cfg:    cfg,
 		logger: logger,
 	}
+}
+
+func (u Uploader) ListFiles(ctx *gin.Context) {
+	var req ListFilesRequest
+
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		WriteBindingErrorResponse(ctx, err)
+
+		return
+	}
+
+	req.UserId = uint(ctx.GetInt64(consts.REQUEST_USER_ID))
+
+	response, err := u.svc.ListFiles(ctx, toSvcListFilesRequest(req))
+
+	if err != nil {
+		WriteErrorResponse(ctx, err, u.logger)
+
+		return
+	}
+
+	ctx.JSON(http.StatusOK, toViewListFiles(response))
+
+	return
 }
 
 func (u Uploader) UploadFile(ctx *gin.Context) {
@@ -48,7 +74,14 @@ func (u Uploader) UploadFile(ctx *gin.Context) {
 		return
 	}
 
-	req.File = &file
+	if userId, exists := ctx.Get(consts.REQUEST_USER_ID); exists {
+		req.UserId = userId.(uint)
+	} else {
+		WriteErrorResponse(ctx, err, u.logger)
+	}
+
+	req.FileName = multipartFile.Filename
+	req.File = file
 
 	response, err := u.svc.UploadFile(ctx, toSvcUploadFileRequest(req))
 	if err != nil {

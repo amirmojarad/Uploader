@@ -13,6 +13,7 @@ type User struct {
 func NewUser(db *gorm.DB) *User {
 	return &User{db: db}
 }
+
 func (u User) CreateUser(ctx context.Context, req service.SignupRequest) (service.SignupResponse, error) {
 	userEntity := toUserEntity(req)
 

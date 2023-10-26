@@ -43,6 +43,9 @@ func runServer() error {
 		return err
 	}
 
+	if err := goose.Down(postgresDb, cfg.PostgresDatabase.MigrationPath); err != nil {
+		return err
+	}
 	if err := goose.Up(postgresDb, cfg.PostgresDatabase.MigrationPath); err != nil {
 		return err
 	}
@@ -75,7 +78,9 @@ func setupRouter(cfg *conf.AppConfig, postgresDb *sql.DB) (*gin.Engine, error) {
 	jwtService := getJwtService(cfg)
 	middleware := controller.NewMiddleware(jwtService)
 
-	uploaderSvc := getUploaderSvc(cfg, minioGateway)
+	fileRepo := repository.NewFile(psql)
+	bucketRepo := repository.NewBucket(psql)
+	uploaderSvc := getUploaderSvc(cfg, minioGateway, bucketRepo, fileRepo)
 
 	userRepo := repository.NewUser(psql)
 	authSvc := getAuthService(userRepo, cfg)
@@ -86,8 +91,15 @@ func setupRouter(cfg *conf.AppConfig, postgresDb *sql.DB) (*gin.Engine, error) {
 	return ginEngine, nil
 }
 
-func getUploaderSvc(cfg *conf.AppConfig, minio *gateway.Minio) *service.Uploader {
-	return service.NewUploader(cfg, logger.GetLogger().WithField("name", "service.uploader"), minio)
+func getUploaderSvc(cfg *conf.AppConfig,
+	minio *gateway.Minio,
+	bucketRepo service.BucketRepository,
+	fileRepository service.FileRepository,
+) *service.Uploader {
+	return service.NewUploader(cfg,
+		logger.GetLogger().WithField("name", "service.uploader"),
+		minio,
+		bucketRepo, fileRepository)
 }
 
 func getUploaderController(cfg *conf.AppConfig, uploaderSvc *service.Uploader) *controller.Uploader {

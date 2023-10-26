@@ -2,6 +2,11 @@ package service
 
 import (
 	"Uploader/internal/errorext"
+	"bytes"
+	"github.com/minio/minio-go/v7"
+	"io"
+	"mime/multipart"
+	"strings"
 
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
@@ -88,4 +93,35 @@ func checkEmailAndPassword(email, password string) error {
 	}
 
 	return nil
+}
+
+func getFileExtension(text string) string {
+	splitByDot := strings.Split(text, ".")
+	return splitByDot[len(splitByDot)-1]
+}
+
+func getBufferFromMultipartFile(file multipart.File) (*bytes.Buffer, error) {
+	reader, err := io.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+	buff := bytes.NewBuffer(reader)
+	return buff, nil
+}
+
+func getFileFromMinioObject(object *minio.Object) (*bytes.Buffer, error) {
+	reader, err := io.ReadAll(object)
+
+	if err != nil {
+		return nil, err
+	}
+
+	buff := bytes.NewBuffer(reader)
+
+	return buff, nil
+
+}
+
+func generateBucketName(userId uint) string {
+	return fmt.Sprintf("user-%d", userId)
 }
